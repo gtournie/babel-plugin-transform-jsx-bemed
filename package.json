@@ -2,6 +2,10 @@
   "name": "babel-plugin-transform-jsx-bem",
   "version": "0.0.1",
   "description": "JSX with BEM format via Babel",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/*.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ximik/babel-plugin-transform-jsx-bem.git"
@@ -20,5 +24,9 @@
   "homepage": "https://github.com/Ximik/babel-plugin-transform-jsx-bem#readme",
   "dependencies": {
     "babel-plugin-syntax-jsx": "^6.18.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.22.1",
+    "tap": "^9.0.3"
   }
 }

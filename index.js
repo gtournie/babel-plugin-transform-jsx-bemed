@@ -1,9 +1,9 @@
 module.exports = function({ types: t }) {
   const requireBem = (bemId, opts) => {
     opts = t.ObjectExpression([
-      t.ObjectProperty(t.Identifier('elementSeparator'), t.StringLiteral('--')),
-      t.ObjectProperty(t.Identifier('modSeparator'), t.StringLiteral('-')),
-      t.ObjectProperty(t.Identifier('modValueSeparator'), t.StringLiteral('-'))
+//       t.ObjectProperty(t.Identifier('elementSeparator'), t.StringLiteral('--')),
+//       t.ObjectProperty(t.Identifier('modSeparator'), t.StringLiteral('-')),
+//       t.ObjectProperty(t.Identifier('modValueSeparator'), t.StringLiteral('-'))
     ]);
 
     return t.VariableDeclaration(
@@ -29,25 +29,32 @@ module.exports = function({ types: t }) {
   };
 
   const callBem = (bemId, attrs) => {
+    for (let i = 0; i < attrs.length; i++) if (attrs[i] === undefined) {
+      attrs[i] = t.NullLiteral();
+    }
     return t.JSXAttribute(
       t.JSXIdentifier('className'),
       t.JSXExpressionContainer(
-        t.CallExpression(bemId, attrs.map((a) => a || t.NullLiteral()))
+        t.CallExpression(bemId, attrs)
       )
     )
   };
+
+  const scopeName = (scope) => {
+    if (scope.block && scope.block.type === 'ArrowFunctionExpression' && scope.parentBlock && scope.parentBlock.type === 'VariableDeclarator') {
+      return scope.parentBlock.id.name;
+    }
+    if (scope.parent && scope.parent.block && scope.parent.block.type === 'ClassDeclaration') {
+      return scope.parent.block.id.name;
+    }
+  }
 
   const JSXElementVisitor = {
     JSXElement(path) {
       const { bemId, block } = this;
       let sBlock;
       if (!block) {
-        const scope = path.scope;
-        if (scope.block && scope.block.type === 'ArrowFunctionExpression' && scope.parentBlock && scope.parentBlock.type === 'VariableDeclarator') {
-          sBlock = scope.parentBlock.id.name;
-        } else if (scope.parent && scope.parent.block && scope.parent.block.type === 'ClassDeclaration') {
-          sBlock = scope.parent.block.id.name;
-        }
+        sBlock = scopeName(path.scope);
         if (sBlock) {
           sBlock = t.StringLiteral(sBlock);
         }
@@ -72,6 +79,7 @@ module.exports = function({ types: t }) {
             attrs[+(name === 'elem')] = value;
             break;
           case 'mods':
+          case 'mix':
             if (t.isJSXExpressionContainer(value)) {
               value = value.expression;
             } else {
