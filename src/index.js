@@ -28,68 +28,70 @@ module.exports = function({ types: t }) {
     )
   };
 
-  const JSXOpeningElementVisitor = {
-    JSXOpeningElement(path) {
-      const attributes = path.node.attributes;
-      if (attributes.length === 0) return;
+  const callBem = (bemId, attrs) => {
+    return t.JSXAttribute(
+      t.JSXIdentifier('className'),
+      t.JSXExpressionContainer(
+        t.CallExpression(bemId, attrs.map((a) => a || t.NullLiteral()))
+      )
+    )
+  };
 
-      let block, element, modifiers, mixins;
-      const scope = path.scope;
-      if (scope.block && scope.block.type === 'ArrowFunctionExpression' && scope.parentBlock && scope.parentBlock.type === 'VariableDeclarator') {
-        block = scope.parentBlock.id.name;
-      } else if (scope.parent && scope.parent.block && scope.parent.block.type === 'ClassDeclaration') {
-        block = scope.parent.block.id.name;
+  const JSXElementVisitor = {
+    JSXElement(path) {
+      const { bemId, block } = this;
+      let sBlock;
+      if (!block) {
+        const scope = path.scope;
+        if (scope.block && scope.block.type === 'ArrowFunctionExpression' && scope.parentBlock && scope.parentBlock.type === 'VariableDeclarator') {
+          sBlock = scope.parentBlock.id.name;
+        } else if (scope.parent && scope.parent.block && scope.parent.block.type === 'ClassDeclaration') {
+          sBlock = scope.parent.block.id.name;
+        }
+        if (sBlock) {
+          sBlock = t.StringLiteral(sBlock);
+        }
       }
 
-      let rIndexes = [],
-          cIndex = null;
+      const paths = [],
+            attrs = [ block || sBlock ],
+            attributes = path.node.openingElement.attributes;
+
       for (let i = 0; i < attributes.length; i++) {
         let name = attributes[i].name.name,
-            value = attributes[i].value;
+            value = attributes[i].value,
+            p = path.get('openingElement.attributes.' + i);
 
         switch (name) {
           case 'block':
-            t.assertStringLiteral(value);
-            rIndexes.push(i);
-            block = value.value;
-            break;
           case 'elem':
-            t.assertStringLiteral(value);
-            rIndexes.push(i);
-            element = value.value;
+            if (!t.isStringLiteral(value)) {
+              throw p.buildCodeFrameError("Attribute value must be a string");
+            }
+            paths.push(p);
+            attrs[+(name === 'elem')] = value;
             break;
           case 'mods':
-            t.assertJSXExpressionContainer(value);
-            console.log(value.expression);
-            rIndexes.push(i);
-            modifiers = value.expression;
-            break;
-          case 'mix':
-            t.assertStringLiteral(value);
-            cIndex = i;
-            mixins = value.value;
+            if (t.isJSXExpressionContainer(value)) {
+              value = value.expression;
+            } else {
+              value = value;
+            }
+            paths.push(p);
+            attrs[2 + (name === 'mix')] = value;
             break;
           case 'className':
             return;
         }
       }
-      if (!block) return;
-      const bem = t.JSXExpressionContainer(t.CallExpression(
-        this.bemId,
-        [
-          t.StringLiteral(block),
-          t.StringLiteral(element),
-          modifiers,
-          t.StringLiteral(mixins),
-        ]
-      ));
+      if (!attrs[0]) return;
 
-      if (cIndex === null) {
-        path.pushContainer('attributes', t.JSXAttribute(t.JSXIdentifier('className'), bem));
-      } else {
-        path.get('attributes.' + cIndex + '.value').replaceWith(bem);
+      path.get('openingElement').pushContainer('attributes', callBem(bemId, attrs));
+      paths.forEach((path) => path.remove());
+
+      if (!block) {
+        path.traverse(JSXElementVisitor, { bemId, block: attrs[0] });
       }
-      rIndexes.sort().reverse().forEach((i) => path.get('attributes.' + i).remove());
     }
   }
 
@@ -97,7 +99,7 @@ module.exports = function({ types: t }) {
     visitor: {
       Program(path, state) {
         const bemId = path.scope.generateUidIdentifier('bem');
-        path.traverse(JSXOpeningElementVisitor, { bemId });
+        path.traverse(JSXElementVisitor, { bemId });
         path.unshiftContainer('body', requireBem(bemId, state.opts));
       }
     },
