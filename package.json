@@ -19,5 +19,6 @@
   },
   "homepage": "https://github.com/Ximik/babel-plugin-transform-jsx-bem#readme",
   "dependencies": {
+    "babel-plugin-syntax-jsx": "^6.18.0"
   }
 }

@@ -1,18 +1,27 @@
 module.exports = function({ types: t }) {
-  const requireBem = (bemVar) => {
-    t.VariableDeclaration(
-      'const',
+  const requireBem = (bemId, opts) => {
+    opts = t.ObjectExpression([
+      t.ObjectProperty(t.Identifier('elementSeparator'), t.StringLiteral('--')),
+      t.ObjectProperty(t.Identifier('modSeparator'), t.StringLiteral('-')),
+      t.ObjectProperty(t.Identifier('modValueSeparator'), t.StringLiteral('-'))
+    ]);
+
+    return t.VariableDeclaration(
+      'var',
       [
         t.VariableDeclarator(
-          bemVar,
-          t.MemberExpression(
-            t.CallExpression(
-                t.Identifier('require'),
-                [
-                    t.stringLiteral('bem')
-                ]
+          bemId,
+          t.CallExpression(
+            t.MemberExpression(
+              t.CallExpression(
+                  t.Identifier('require'),
+                  [
+                      t.StringLiteral('bem')
+                  ]
+              ),
+              t.Identifier('default')
             ),
-            t.Identifier('default')
+            [ opts ]
           )
         )
       ]
@@ -39,31 +48,34 @@ module.exports = function({ types: t }) {
             value = attributes[i].value;
 
         switch (name) {
-          case "b":
+          case 'block':
             t.assertStringLiteral(value);
             rIndexes.push(i);
             block = value.value;
             break;
-          case "e":
+          case 'elem':
             t.assertStringLiteral(value);
             rIndexes.push(i);
             element = value.value;
             break;
-          case "m":
+          case 'mods':
             t.assertJSXExpressionContainer(value);
+            console.log(value.expression);
             rIndexes.push(i);
             modifiers = value.expression;
             break;
-          case "className":
+          case 'mix':
             t.assertStringLiteral(value);
             cIndex = i;
             mixins = value.value;
             break;
+          case 'className':
+            return;
         }
       }
       if (!block) return;
       const bem = t.JSXExpressionContainer(t.CallExpression(
-        this.bemVar,
+        this.bemId,
         [
           t.StringLiteral(block),
           t.StringLiteral(element),
@@ -83,12 +95,12 @@ module.exports = function({ types: t }) {
 
   return {
     visitor: {
-      Program(path) {
-        const bemVar = path.scope.generateUidIdentifier('bem');
-        path.unshiftContainer('body', requireBem(bemVar));
-        path.traverse(JSXOpeningElementVisitor, { bemVar });
+      Program(path, state) {
+        const bemId = path.scope.generateUidIdentifier('bem');
+        path.traverse(JSXOpeningElementVisitor, { bemId });
+        path.unshiftContainer('body', requireBem(bemId, state.opts));
       }
     },
-    inherits: require("babel-plugin-syntax-jsx")
+    inherits: require('babel-plugin-syntax-jsx')
   }
 }
