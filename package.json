@@ -1,0 +1,24 @@
+{
+  "name": "babel-plugin-transform-jsx-bem",
+  "version": "0.0.1",
+  "description": "JSX with BEM format via Babel",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ximik/babel-plugin-transform-jsx-bem.git"
+  },
+  "keywords": [
+    "bem",
+    "babel",
+    "react",
+    "jsx"
+  ],
+  "author": "Alex Tsokurov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ximik/babel-plugin-transform-jsx-bem/issues"
+  },
+  "homepage": "https://github.com/Ximik/babel-plugin-transform-jsx-bem#readme",
+  "dependencies": {
+    "b_": "^1.3.3"
+  }
+}
