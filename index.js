@@ -1,27 +1,40 @@
 module.exports = function({ types: t }) {
+  const ast = (obj) => {
+    switch (typeof obj) {
+      case 'string':
+        return t.StringLiteral(obj);
+      case 'object':
+        if (Array.isArray(obj)) {
+          return t.arrayExpression(obj.map(ast));
+        }
+        return t.ObjectExpression(
+          Object.keys(obj).filter((k) => obj[k] !== undefined).map((k) => t.ObjectProperty(t.Identifier(k), ast(obj[k])))
+        );
+    }
+  };
+
   const requireBem = (bemId, opts) => {
-    opts = t.ObjectExpression([
-//       t.ObjectProperty(t.Identifier('elementSeparator'), t.StringLiteral('--')),
-//       t.ObjectProperty(t.Identifier('modSeparator'), t.StringLiteral('-')),
-//       t.ObjectProperty(t.Identifier('modValueSeparator'), t.StringLiteral('-'))
-    ]);
+    opts = ast(opts || {});
 
     return t.VariableDeclaration(
       'var',
       [
         t.VariableDeclarator(
           bemId,
-          t.CallExpression(
-            t.MemberExpression(
-              t.CallExpression(
-                  t.Identifier('require'),
-                  [
-                      t.StringLiteral('bem')
-                  ]
+          t.MemberExpression(
+            t.CallExpression(
+              t.MemberExpression(
+                t.CallExpression(
+                    t.Identifier('require'),
+                    [
+                        t.StringLiteral('bem')
+                    ]
+                ),
+                t.Identifier('default')
               ),
-              t.Identifier('default')
+              [ opts ]
             ),
-            [ opts ]
+            t.Identifier('generate')
           )
         )
       ]
@@ -107,8 +120,9 @@ module.exports = function({ types: t }) {
     visitor: {
       Program(path, state) {
         const bemId = path.scope.generateUidIdentifier('bem');
+        const { separators } = state.opts;
         path.traverse(JSXElementVisitor, { bemId });
-        path.unshiftContainer('body', requireBem(bemId, state.opts));
+        path.unshiftContainer('body', requireBem(bemId, { separators }));
       }
     },
     inherits: require('babel-plugin-syntax-jsx')
