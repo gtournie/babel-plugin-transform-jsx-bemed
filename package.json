@@ -1,5 +1,5 @@
 {
-  "name": "babel-plugin-transform-jsx-bemem",
+  "name": "babel-plugin-transform-jsx-bemed",
   "version": "0.0.1",
   "description": "JSX with BEM format via Babel",
   "main": "index.js",
