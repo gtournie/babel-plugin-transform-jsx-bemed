@@ -1,6 +1,8 @@
-const { assertTransform } = require('./common');
+"use strict"
 
-assertTransform(
+const { assertBody } = require('./common');
+
+assertBody(
 `<div block="message">
   <h1 elem="title">{ title }</h1>
   <div elem="message" mods={{ error }}>{ message }</div>
@@ -11,7 +13,7 @@ assertTransform(
 </div>;`
 );
 
-assertTransform(
+assertBody(
 `<div block="message">
   <h1 block="title">{ title }</h1>
   <div elem="message" mods={{ error }}>{ message }</div>

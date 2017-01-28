@@ -1,6 +1,8 @@
-const { assertTransform } = require('./common');
+"use strict"
 
-assertTransform(
+const { assertBody } = require('./common');
+
+assertBody(
 `class Message extends React.Component {
   render() {
     const { title, message, error } = this.props;
@@ -21,7 +23,7 @@ assertTransform(
 }`
 );
 
-assertTransform(
+assertBody(
 `const Message = ({ title, message, error }) => {
   return <div>
     <h1 elem="title">{ title }</h1>

@@ -1,3 +1,5 @@
+"use strict"
+
 module.exports = function({ types: t }) {
   const ast = (obj) => {
     switch (typeof obj) {
@@ -27,7 +29,7 @@ module.exports = function({ types: t }) {
                 t.CallExpression(
                     t.Identifier('require'),
                     [
-                        t.StringLiteral('bem')
+                        t.StringLiteral('bemed')
                     ]
                 ),
                 t.Identifier('default')
@@ -64,7 +66,8 @@ module.exports = function({ types: t }) {
 
   const JSXElementVisitor = {
     JSXElement(path) {
-      const { bemId, block } = this;
+      const { bemId, properties, block } = this;
+
       let sBlock;
       if (!block) {
         sBlock = scopeName(path.scope);
@@ -83,23 +86,23 @@ module.exports = function({ types: t }) {
             p = path.get('openingElement.attributes.' + i);
 
         switch (name) {
-          case 'block':
-          case 'elem':
+          case properties.block:
+          case properties.element:
             if (!t.isStringLiteral(value)) {
               throw p.buildCodeFrameError("Attribute value must be a string");
             }
             paths.push(p);
-            attrs[+(name === 'elem')] = value;
+            attrs[+(name === properties.element)] = value;
             break;
-          case 'mods':
-          case 'mix':
+          case properties.modifiers:
+          case properties.mixin:
             if (t.isJSXExpressionContainer(value)) {
               value = value.expression;
             } else {
               value = value;
             }
             paths.push(p);
-            attrs[2 + (name === 'mix')] = value;
+            attrs[2 + (name === properties.mixin)] = value;
             break;
           case 'className':
             return;
@@ -111,7 +114,7 @@ module.exports = function({ types: t }) {
       paths.forEach((path) => path.remove());
 
       if (!block) {
-        path.traverse(JSXElementVisitor, { bemId, block: attrs[0] });
+        path.traverse(JSXElementVisitor, { bemId, properties, block: attrs[0] });
       }
     }
   }
@@ -120,8 +123,14 @@ module.exports = function({ types: t }) {
     visitor: {
       Program(path, state) {
         const bemId = path.scope.generateUidIdentifier('bem');
-        const { separators } = state.opts;
-        path.traverse(JSXElementVisitor, { bemId });
+        const { separators } = state.opts,
+              properties = Object.assign({
+                block: 'block',
+                element: 'elem',
+                modifiers: 'mods',
+                mixin: 'mix'
+              }, state.opts.properties || {});
+        path.traverse(JSXElementVisitor, { bemId, properties });
         path.unshiftContainer('body', requireBem(bemId, { separators }));
       }
     },

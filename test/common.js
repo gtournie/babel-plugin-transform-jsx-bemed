@@ -1,3 +1,5 @@
+"use strict"
+
 const tap = require('tap'),
       babel = require('babel-core');
 
@@ -8,17 +10,15 @@ if (require.main === module) {
 
 const transform = (code, opts) => babel.transform(code, {
   plugins: [[__dirname + '/..', opts]]
-}).code;
-
-const head = "var _bem = require(\"bem\").default({}).generate;\n\n";
+}).code.split("\n\n");
 
 module.exports = {
-  assertTransform: (before, after) => tap.equal(
-    transform(before),
-    head + after
+  assertBody: (source, body, opts) => tap.equal(
+    transform(source, opts)[1],
+    body
   ),
-  assertTransformOptions: (before, after, opts) => tap.equal(
-    transform(before, opts),
-    after
+  assertHeader: (header, opts) => tap.equal(
+    transform('', opts)[0],
+    header
   )
 };

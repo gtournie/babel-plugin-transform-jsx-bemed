@@ -1,2 +1,2 @@
-# babel-plugin-transform-jsx-bem
+# babel-plugin-transform-jsx-bemem
 JSX with BEM format via Babel
