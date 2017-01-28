@@ -1,6 +1,6 @@
 "use strict"
 
-const { assertBody } = require('./common');
+const assertBody = require('./common').assertBody;
 
 assertBody(
 `class Message extends React.Component {

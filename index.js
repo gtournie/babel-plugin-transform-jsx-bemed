@@ -1,6 +1,8 @@
 "use strict"
 
-module.exports = function({ types: t }) {
+module.exports = function(base) {
+  const t = base.types;
+
   const ast = (obj) => {
     switch (typeof obj) {
       case 'string':
@@ -66,7 +68,9 @@ module.exports = function({ types: t }) {
 
   const JSXElementVisitor = {
     JSXElement(path) {
-      const { bemId, properties, block } = this;
+      const bemId = this.bemId,
+            properties = this.properties,
+            block = this.block;
 
       let sBlock;
       if (!block) {
@@ -123,7 +127,7 @@ module.exports = function({ types: t }) {
     visitor: {
       Program(path, state) {
         const bemId = path.scope.generateUidIdentifier('bem');
-        const { separators } = state.opts,
+        const separators = state.opts.separators,
               properties = Object.assign({
                 block: 'block',
                 element: 'elem',

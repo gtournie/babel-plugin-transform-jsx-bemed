@@ -1,10 +1,10 @@
 "use strict"
 
-const { assertHeader, assertBody } = require('./common');
+const c = require('./common');
 
-assertHeader('var _bem = require("bemed").default({}).generate;');
+c.assertHeader('var _bem = require("bemed").default({}).generate;');
 
-assertHeader(
+c.assertHeader(
 `var _bem = require("bemed").default({
   separators: {
     element: "___"
@@ -12,7 +12,7 @@ assertHeader(
 }).generate;`
 , { separators: { element: '___' } });
 
-assertBody(
+c.assertBody(
   '<div block="block" element="element" />;',
   '<div className={_bem("block", "element")} />;',
   { properties: { element: 'element' } }
