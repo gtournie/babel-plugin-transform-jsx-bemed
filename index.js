@@ -56,69 +56,102 @@ module.exports = function(base) {
     )
   };
 
-  const scopeName = (scope) => {
+  const getScopeName = (scope) => {
     if (scope.block && scope.block.type === 'ArrowFunctionExpression' && scope.parentBlock && scope.parentBlock.type === 'VariableDeclarator') {
       return scope.parentBlock.id.name;
     }
     if (scope.parent && scope.parent.block && scope.parent.block.type === 'ClassDeclaration') {
       return scope.parent.block.id.name;
     }
-  }
+  };
 
-  const JSXElementVisitor = {
+  const readAttributes = (path, properties) => {
+    const paths = [],
+          attrs = [],
+          attributes = path.node.openingElement.attributes;
+
+    for (let i = 0; i < attributes.length; i++) {
+      let name = attributes[i].name.name,
+          value = attributes[i].value,
+          p = path.get('openingElement.attributes.' + i);
+
+      switch (name) {
+        case properties.block:
+        case properties.element:
+          if (!t.isStringLiteral(value)) {
+            throw p.buildCodeFrameError("Attribute value must be a string");
+          }
+          paths.push(p);
+          attrs[+(name === properties.element)] = value;
+          break;
+        case properties.modifiers:
+        case properties.mixin:
+          if (t.isJSXExpressionContainer(value)) {
+            value = value.expression;
+          } else {
+            value = value;
+          }
+          paths.push(p);
+          attrs[2 + (name === properties.mixin)] = value;
+          break;
+        case 'className':
+          return null;
+      }
+    }
+    return { paths, attrs };
+  };
+
+  const mutateAttributes = (path, attributes, bemId) => {
+    path.get('openingElement').pushContainer('attributes', callBem(bemId, attributes.attrs));
+    attributes.paths.forEach((path) => path.remove());
+  };
+
+  const JSXChildElementVisitor = {
     JSXElement(path) {
+      const properties = this.properties;
+      const attributes = readAttributes(path, properties);
+      if (attributes === null || !attributes.attrs.length) return;
+
+      const attrs = attributes.attrs,
+            bemId = this.bemId;
+      if (attrs[0]) {
+        throw path.buildCodeFrameError("Block definition must be in the root JSXElement");
+      }
+      if (!attrs[1]) {
+        throw path.buildCodeFrameError("Element must be specified");
+      }
+      attrs[0] = this.block;
+      mutateAttributes(path, attributes, bemId);
+    }
+  };
+
+  const JSXRootElementVisitor = {
+    JSXElement(path) {
+      if (t.isJSXElement(path.parent)) return;
+
+      const properties = this.properties;
+      const attributes = readAttributes(path, properties);
+      if (attributes === null) return;
+
+      const attrs = attributes.attrs;
+      if (!attrs[0]) {
+        const sname = getScopeName(path.scope);
+        if (sname) {
+          attrs[0] = t.StringLiteral(sname);
+        } else {
+          if (attrs.length) {
+            throw path.buildCodeFrameError("Block must be specified");
+          }
+          return;
+        }
+      }
+
       const bemId = this.bemId,
-            properties = this.properties,
-            block = this.block;
+            use = this.use;
 
-      let sBlock;
-      if (!block) {
-        sBlock = scopeName(path.scope);
-        if (sBlock) {
-          sBlock = t.StringLiteral(sBlock);
-        }
-      }
-
-      const paths = [],
-            attrs = [ block || sBlock ],
-            attributes = path.node.openingElement.attributes;
-
-      for (let i = 0; i < attributes.length; i++) {
-        let name = attributes[i].name.name,
-            value = attributes[i].value,
-            p = path.get('openingElement.attributes.' + i);
-
-        switch (name) {
-          case properties.block:
-          case properties.element:
-            if (!t.isStringLiteral(value)) {
-              throw p.buildCodeFrameError("Attribute value must be a string");
-            }
-            paths.push(p);
-            attrs[+(name === properties.element)] = value;
-            break;
-          case properties.modifiers:
-          case properties.mixin:
-            if (t.isJSXExpressionContainer(value)) {
-              value = value.expression;
-            } else {
-              value = value;
-            }
-            paths.push(p);
-            attrs[2 + (name === properties.mixin)] = value;
-            break;
-          case 'className':
-            return;
-        }
-      }
-      if (!attrs[0]) return;
-
-      path.get('openingElement').pushContainer('attributes', callBem(bemId, attrs));
-      paths.forEach((path) => path.remove());
-
-      if (!block) {
-        path.traverse(JSXElementVisitor, { bemId, properties, block: attrs[0] });
-      }
+      use.flag = true;
+      mutateAttributes(path, attributes, bemId);
+      path.traverse(JSXChildElementVisitor, { bemId, properties, block: attrs[0] });
     }
   }
 
@@ -134,8 +167,11 @@ module.exports = function(base) {
                 modifiers: 'mods',
                 mixin: 'mix'
               }, state.opts.properties || {});
-        path.traverse(JSXElementVisitor, { bemId, properties });
-        path.unshiftContainer('body', requireBem(bemId, bemedId, { separators }));
+        const use = { flag: false };
+        path.traverse(JSXRootElementVisitor, { bemId, properties, use });
+        if (use.flag) {
+          path.unshiftContainer('body', requireBem(bemId, bemedId, { separators }));
+        }
       }
     },
     inherits: require('babel-plugin-syntax-jsx')

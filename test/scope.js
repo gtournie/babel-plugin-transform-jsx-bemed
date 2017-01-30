@@ -46,7 +46,7 @@ c.assertBody(
   </div>;
 };`,
 `const Time = ({ time }) => {
-  return <div className={_bem("time")}>
+  return <div className={_bem("Time")}>
     <span></span>
     {time}
   </div>;

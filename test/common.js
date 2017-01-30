@@ -8,25 +8,27 @@ if (require.main === module) {
   return;
 }
 
+const transform = (code, opts) => babel.transform(code, {
+  plugins: [[__dirname + '/..', opts]]
+}).code.replace("\n\n", "\n");
+
 module.exports = {
-  defaultHeader: "import _bemed from \"bemed\";\nconst _bem = _bemed({});",
-  transform: function (code, opts) {
-    return babel.transform(code, {
-      plugins: [[__dirname + '/..', opts]]
-    }).code.replace(/\n+/, "\n");
-  },
-  assertCode: function (source, code, opts) {
-    tap.equal(
-      this.transform(source, opts),
-      code
-    );
-  },
-  assertBody: function (source, body, opts) {
-    this.assertCode(source, this.defaultHeader + "\n\n" + body, opts);
-  },
-  assertException: function (source, opts) {
+  assertCode: (source, code, opts) => tap.equal(
+    transform(source, opts),
+    code
+  ),
+  assertBody: (source, body, opts) => tap.equal(
+    transform(source, opts).split("\n\n")[1],
+    body
+  ),
+  assertHeader: (header, opts) => tap.equal(
+    transform('<div block="block" />', opts).split("\n\n")[0],
+    header
+  ),
+  assertSyntaxError: function (source, opts) {
     tap.throws(
-      () => this.transform(source, opts)
+      () => transform(source, opts),
+      SyntaxError
     );
   }
 };

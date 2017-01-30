@@ -14,17 +14,6 @@ c.assertBody(
 );
 
 c.assertBody(
-`<div block="message">
-  <h1 block="title">{ title }</h1>
-  <div block="box" mods={{ error }}>{ message }</div>
-</div>;`,
-`<div className={_bem("message")}>
-  <h1 className={_bem("title")}>{title}</h1>
-  <div className={_bem("box", null, { error })}>{message}</div>
-</div>;`
-);
-
-c.assertBody(
 `<div block="time">
   <span></span>
   { time }

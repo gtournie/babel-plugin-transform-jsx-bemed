@@ -2,12 +2,12 @@
 
 const c = require('./common');
 
-c.assertException(
+c.assertSyntaxError(
   '<div block={ block } />'
 );
-c.assertException(
-  '<div mods="mod" />'
-);
-c.assertException(
+c.assertSyntaxError(
   '<div block="block"><div mods="mod" /></div>'
+);
+c.assertSyntaxError(
+  '<div block="block"><div block="element"></div></div>'
 );

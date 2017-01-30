@@ -6,11 +6,11 @@ c.assertCode(
   '<div />;',
   '<div />;'
 );
-c.assertBody(
+c.assertCode(
   '<div block="block" />;',
-  '<div className={_bem("block")} />;'
+  "import _bemed from \"bemed\";\nconst _bem = _bemed({});\n\n<div className={_bem(\"block\")} />;"
 );
-c.assertBody(
+c.assertCode(
   '<div block="block" className="name" />;',
   '<div block="block" className="name" />;'
 );
