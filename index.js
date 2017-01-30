@@ -17,32 +17,31 @@ module.exports = function(base) {
     }
   };
 
-  const requireBem = (bemId, opts) => {
+  const requireBem = (bemId, bemedId, opts) => {
     opts = ast(opts || {});
 
-    return t.VariableDeclaration(
-      'var',
-      [
-        t.VariableDeclarator(
-          bemId,
-          t.MemberExpression(
-            t.CallExpression(
-              t.MemberExpression(
-                t.CallExpression(
-                    t.Identifier('require'),
-                    [
-                        t.StringLiteral('bemed')
-                    ]
-                ),
-                t.Identifier('default')
-              ),
-              [ opts ]
-            ),
-            t.Identifier('generate')
+    return [
+      t.ImportDeclaration(
+        [
+          t.ImportDefaultSpecifier(
+            bemedId
           )
-        )
-      ]
-    )
+        ],
+        t.StringLiteral('bemed')
+      ),
+      t.VariableDeclaration(
+        'const',
+        [
+          t.VariableDeclarator(
+            bemId,
+            t.CallExpression(
+              bemedId,
+              [ opts ]
+            )
+          )
+        ]
+      )
+    ];
   };
 
   const callBem = (bemId, attrs) => {
@@ -126,7 +125,8 @@ module.exports = function(base) {
   return {
     visitor: {
       Program(path, state) {
-        const bemId = path.scope.generateUidIdentifier('bem');
+        const bemId = path.scope.generateUidIdentifier('bem'),
+              bemedId = path.scope.generateUidIdentifier('bemed');
         const separators = state.opts.separators,
               properties = Object.assign({
                 block: 'block',
@@ -135,7 +135,7 @@ module.exports = function(base) {
                 mixin: 'mix'
               }, state.opts.properties || {});
         path.traverse(JSXElementVisitor, { bemId, properties });
-        path.unshiftContainer('body', requireBem(bemId, { separators }));
+        path.unshiftContainer('body', requireBem(bemId, bemedId, { separators }));
       }
     },
     inherits: require('babel-plugin-syntax-jsx')

@@ -2,14 +2,16 @@
 
 const c = require('./common');
 
-c.assertHeader('var _bem = require("bemed").default({}).generate;');
-
-c.assertHeader(
-`var _bem = require("bemed").default({
+c.assertCode(
+'<div block="block" />;',
+`import _bemed from "bemed";
+const _bem = _bemed({
   separators: {
     element: "___"
   }
-}).generate;`
+});
+
+<div className={_bem("block")} />;`
 , { separators: { element: '___' } });
 
 c.assertBody(

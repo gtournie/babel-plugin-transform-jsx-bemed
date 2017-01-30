@@ -1,8 +1,8 @@
 "use strict"
 
-const assertBody = require('./common').assertBody;
+const c = require('./common');
 
-assertBody(
+c.assertBody(
 `class Message extends React.Component {
   render() {
     const { title, message, error } = this.props;
@@ -23,7 +23,7 @@ assertBody(
 }`
 );
 
-assertBody(
+c.assertBody(
 `const Message = ({ title, message, error }) => {
   return <div>
     <h1 elem="title">{ title }</h1>
@@ -37,3 +37,20 @@ assertBody(
   </div>;
 };`
 );
+
+c.assertBody(
+`const Time = ({ time }) => {
+  return <div>
+    <span></span>
+    {time}
+  </div>;
+};`,
+`const Time = ({ time }) => {
+  return <div className={_bem("time")}>
+    <span></span>
+    {time}
+  </div>;
+};`
+);
+
+

@@ -1,8 +1,8 @@
 "use strict"
 
-const assertBody = require('./common').assertBody;
+const c = require('./common');
 
-assertBody(
+c.assertBody(
 `<div block="message">
   <h1 elem="title">{ title }</h1>
   <div elem="message" mods={{ error }}>{ message }</div>
@@ -13,13 +13,24 @@ assertBody(
 </div>;`
 );
 
-assertBody(
+c.assertBody(
 `<div block="message">
   <h1 block="title">{ title }</h1>
-  <div elem="message" mods={{ error }}>{ message }</div>
+  <div block="box" mods={{ error }}>{ message }</div>
 </div>;`,
 `<div className={_bem("message")}>
   <h1 className={_bem("title")}>{title}</h1>
-  <div className={_bem("message", "message", { error })}>{message}</div>
+  <div className={_bem("box", null, { error })}>{message}</div>
+</div>;`
+);
+
+c.assertBody(
+`<div block="time">
+  <span></span>
+  { time }
+</div>;`,
+`<div className={_bem("time")}>
+  <span></span>
+  {time}
 </div>;`
 );
