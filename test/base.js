@@ -8,7 +8,7 @@ c.assertCode(
 );
 c.assertCode(
   '<div block="block" />;',
-  "import _bemed from \"bemed\";\nconst _bem = _bemed({});\n\n<div className={_bem(\"block\")} />;"
+  "import _bemed from \"bemed\";\nconst _bem = _bemed({}).generate;\n\n<div className={_bem(\"block\")} />;"
 );
 c.assertCode(
   '<div block="block" className="name" />;',

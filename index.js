@@ -34,9 +34,12 @@ module.exports = function(base) {
         [
           t.VariableDeclarator(
             bemId,
-            t.CallExpression(
-              bemedId,
-              [ opts ]
+            t.MemberExpression(
+              t.CallExpression(
+                bemedId,
+                [ opts ]
+              ),
+              t.Identifier('generate')
             )
           )
         ]

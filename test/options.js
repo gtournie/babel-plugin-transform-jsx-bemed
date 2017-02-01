@@ -9,7 +9,7 @@ const _bem = _bemed({
   separators: {
     element: "___"
   }
-});
+}).generate;
 
 <div className={_bem("block")} />;`
 , { separators: { element: '___' } });
