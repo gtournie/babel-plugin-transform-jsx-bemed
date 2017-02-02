@@ -29,15 +29,19 @@ If `className` is already in tag then nothing will be done (for back-compatibili
 
 ### Properties
 **block**
+
 Block property. Must be a string.
 
 **elem**
+
 Element property. Must be a string.
 
 **mods**
+
 Modifier property. Can be a string or JavaScript expressions (inside `{` `}`). Expression must return string, array or object.
 
 **mix**
+
 Mixin property. Can be a string or JavaScript expressions (inside `{` `}`). Expression must return string or array.
 
 ### Scopes
@@ -109,7 +113,7 @@ class Message extends Component {
 
 ## Options
 
-### rules
+### properties
 
 Set custom properties naming. Default is
 ```js
