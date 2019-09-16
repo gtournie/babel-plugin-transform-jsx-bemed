@@ -1,21 +1,11 @@
-"use strict"
+'use strict'
 
-const c = require('./common');
+const c = require('./common')
 
-c.assertCode(
-'<div block="block" />;',
-`import _bemed from "bemed";
-const _bem = _bemed({
-  separators: {
-    element: "___"
-  }
-}).generate;
+c.assertCode('<div block="block" elem="element" />;', '<div className="block___element" />;', {
+  separators: { element: '___' },
+})
 
-<div className={_bem("block")} />;`
-, { separators: { element: '___' } });
-
-c.assertBody(
-  '<div block="block" element="element" />;',
-  '<div className={_bem("block", "element")} />;',
-  { properties: { element: 'element' } }
-);
+c.assertCode('<div block="block" element="element" />;', '<div className="block__element" />;', {
+  properties: { element: 'element' },
+})

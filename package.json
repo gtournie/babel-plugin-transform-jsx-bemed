@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "babel-core": "^6.22.1",
+    "bemed": "^1.0.0",
     "tap": "^9.0.3"
   }
 }

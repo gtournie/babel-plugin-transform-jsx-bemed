@@ -1,8 +1,29 @@
+This version tries to resolve className during compilation and fallback to runtime if not possible.
+
+**Input**
+```js
+const Message = ({ type, title, text}) => {
+  return <div mods={{ type }} >
+    <div elem="header">{ title }</div>
+    <div elem="body">{ text }</div>
+  </div>
+}
+```
+**Output**
+```js
+const Message = ({ type, title, text }) => {
+  return <div className={_bem("Message", null, { type })}>
+    <div class="Main__header Main__header--header">Title</div>
+    <div class="Main__body">Text</div>
+  </div>;
+};
+```
+
 # babel-plugin-transform-jsx-bemed
 
 [![Build Status](https://travis-ci.org/Ximik/babel-plugin-transform-jsx-bemed.svg?branch=master)](https://travis-ci.org/Ximik/babel-plugin-transform-jsx-bemed)
 
-[Babel](https://babeljs.io/) plugin for [BEM](https://en.bem.info/) class names generation in [JSX](https://facebook.github.io/react/docs/introducing-jsx.html). 
+[Babel](https://babeljs.io/) plugin for [BEM](https://en.bem.info/) class names generation in [JSX](https://facebook.github.io/react/docs/introducing-jsx.html).
 It was developed for using in [React](https://facebook.github.io/react/) in combination with [postcss plugin](https://github.com/Ximik/postcss-bemed).
 
 ## Install
@@ -22,7 +43,7 @@ $ npm install bemed --save
 
 ## Usage
 Just add BEM properties into your tag and plugin will construct `className` for you.
-`className` will be a JavaScript expression which calls function from `bemed`. Header will have this function definition, so it just works out of the box by 
+`className` will be a JavaScript expression which calls function from `bemed`. Header will have this function definition, so it just works out of the box by
 default.
 If `className` is already in tag then nothing will be done (for back-compatibility).
 
@@ -49,7 +70,7 @@ Mixin property. Can be a string or JavaScript expressions (inside `{` `}`). Expr
 
 ### Examples
 Base usage
-  
+
 **Input**
 ```js
 <div block="Main" mix="panel" mods={{ warning: true }}>
@@ -64,7 +85,7 @@ Base usage
   <div className={_bem("Main", "body")}>Text</div>
 </div>
 ```
-  
+
 **Input**
 ```js
 const Message = ({ type, title, text}) => {
@@ -83,7 +104,7 @@ const Message = ({ type, title, text }) => {
   </div>;
 };
 ```
-  
+
 **Input**
 ```js
 class Message extends Component {
