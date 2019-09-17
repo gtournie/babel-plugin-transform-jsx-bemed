@@ -97,7 +97,7 @@ module.exports = function(base) {
       attributes = path.node.openingElement.attributes
 
     for (let i = 0; i < attributes.length; i++) {
-      let name = attributes[i].name.name,
+      let name = (attributes[i].name || {}).name,
         value = attributes[i].value,
         p = path.get('openingElement.attributes.' + i)
 
